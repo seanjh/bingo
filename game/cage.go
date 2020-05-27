@@ -4,12 +4,9 @@ import (
 	"math/rand"
 )
 
-// Round represents a round of BINGO, including the cage of numbers
-// and any cards in play.
-type Round struct {
-	cage  *Cage
-	cards []Card
-}
+const nan = -1         // invalid number
+const standardMin = 1  // standard minimum value in BINGO
+const standardMax = 75 // standard maximum value in BINGO
 
 // Cage holds the BINGO balls for a round.
 type Cage struct {
@@ -57,5 +54,5 @@ func NewCage(min, max int) *Cage {
 
 // NewStandardCage returns a new cage with numbers in the standard range [1,75].
 func NewStandardCage() *Cage {
-	return NewCage(1, 75)
+	return NewCage(standardMin, standardMax)
 }

@@ -5,9 +5,8 @@ import (
 )
 
 const standardRows = 5     // default number of rows per column
-const standardMultiple = 2 // default multiple of available to possible row values
+const standardMultiple = 3 // default multiple of available to possible row values
 const free = 0             // card "free" space
-const nan = -1             // invalid number
 
 const (
 	B = 1
@@ -48,7 +47,7 @@ func (col *Column) addFreeSlot() {
 	fmt.Println("TODO")
 }
 
-// Cage TODO
+// Card contains 5 columns of randomized values.
 type Card struct {
 	B        *Column
 	I        *Column
