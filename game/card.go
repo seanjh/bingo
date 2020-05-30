@@ -16,10 +16,46 @@ const (
 	O = 5
 )
 
+func getColumnLabel(number int) string {
+	switch number {
+	case B:
+		return "B"
+	case I:
+		return "I"
+	case N:
+		return "N"
+	case G:
+		return "G"
+	case O:
+		return "O"
+	}
+	return "WTF"
+}
+
+// Cell is one number on a BINGO card.
+type Cell struct {
+	column  int
+	value   int
+	covered bool
+}
+
+func (c *Cell) String() string {
+	column := getColumnLabel(c.column)
+	state := ""
+	if c.covered {
+		state = " - X"
+	}
+	return fmt.Sprintf("%s%d%s", column, c.value, state)
+}
+
+func (c *Cell) Cover() {
+	c.covered = true
+}
+
 // Column is one column of numbers on a single BINGO card.
 type Column struct {
 	number int
-	values []int
+	values []*Cell
 }
 
 // validRange returns the column's valid range as [lower,upper].
@@ -35,12 +71,15 @@ func (col *Column) validRange(rows, multiple int) (int, int) {
 }
 
 // fill populates the numbers in a column from the valid range.
-func (col *Column) fill(rows, multiple int) []int {
+func (col *Column) fill(rows, multiple int) {
+	col.values = make([]*Cell, 0, rows)
+
 	cage := NewCage(col.validRange(rows, multiple))
-	for i := 0; i < len(col.values); i++ {
-		col.values[i] = cage.Take()
+	for i := 0; i < rows; i++ {
+		value, _ := cage.Take() // we're careful to avoid empty cages
+		cell := &Cell{column: col.number, value: value}
+		col.values = append(col.values, cell)
 	}
-	return col.values
 }
 
 func (col *Column) addFreeSlot() {
@@ -60,14 +99,13 @@ type Card struct {
 
 // newColumn returns the randomized column for the given column number.
 func (card *Card) newColumn(number int) *Column {
-	col := &Column{
-		number: number,
-		values: make([]int, 0, card.rows),
-	}
+	col := &Column{number: number}
 	col.fill(card.rows, card.multiple)
+
 	if number == N {
 		col.addFreeSlot()
 	}
+
 	return col
 }
 

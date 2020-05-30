@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"math/rand"
 )
 
@@ -20,15 +21,15 @@ func (c *Cage) IsEmpty() bool {
 }
 
 // Take returns and moves a number from inside to outside the cage.
-func (c *Cage) Take() int {
+func (c *Cage) Take() (int, error) {
 	if c.IsEmpty() {
-		return nan
+		return nan, errors.New("Cannot take from empty cage")
 	}
 	c.shuffle()                           // variety is the spice of life
 	value := c.Inside[len(c.Inside)-1]    // take the last ball
 	c.Inside = c.Inside[:len(c.Inside)-1] // remove the last ball Inside
 	c.Outside = append(c.Outside, value)  // add the last ball Outside
-	return value
+	return value, nil
 }
 
 // shuffle randomizes the numbers inside the cage.
