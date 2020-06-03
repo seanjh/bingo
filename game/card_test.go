@@ -35,9 +35,9 @@ func TestStandardCard(t *testing.T) {
 func TestCardFill(t *testing.T) {
 	card := NewCard(1, 1)
 
-	one := &Cell{column: B, value: 1}
+	one := &cell{column: B, value: 1}
 	// TODO(sean): card.B[0] would be a nicer way to access B1
-	// this means card.B is []Cell and Column goes away
+	// this means card.B is []cell and Column goes away
 	if actual := card.B.values[0]; actual.value != one.value {
 		t.Errorf("B1 is '%s'; want '%s'", actual, one)
 	}
@@ -45,13 +45,13 @@ func TestCardFill(t *testing.T) {
 
 func TestCellCovered(t *testing.T) {
 	cases := []struct {
-		cell     *Cell
+		cell     *cell
 		expected string
 	}{
-		{&Cell{}, "WTF0"},
-		{&Cell{value: 1}, "WTF1"},
-		{&Cell{column: B, value: 1}, "B1"},
-		{&Cell{column: B, value: 1, covered: true}, "B1 - X"},
+		{&cell{}, "WTF0"},
+		{&cell{value: 1}, "WTF1"},
+		{&cell{column: B, value: 1}, "B1"},
+		{&cell{column: B, value: 1, covered: true}, "B1 - X"},
 	}
 
 	for _, c := range cases {

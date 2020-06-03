@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"strings"
 )
 
 const standardRows = 5     // default number of rows per column
@@ -22,6 +21,7 @@ const (
 	O = 5
 )
 
+// Return the column label (e.g. "B") for the column number (1-B, 2-I, 3-N, 4-G, 5-O).
 func getColumnLabel(number int) string {
 	switch number {
 	case B:
@@ -38,14 +38,27 @@ func getColumnLabel(number int) string {
 	return "WTF"
 }
 
-// Cell is one number on a BINGO card.
-type Cell struct {
+// parseCellName returns the column label and row number for a given cell name (e.g., "B1" -> ("B", 1))
+func parseCellName(card *Card, cellName string) (string, int, error) {
+	var (
+		colName string
+		row     int
+	)
+	_, err := fmt.Scanf(cellName, "%s%d", &colName, &row)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to parse cell: %s", cellName)
+	}
+	return colName, row, nil
+}
+
+// cell is one number on a BINGO card.
+type cell struct {
 	column  int
 	value   int
 	covered bool
 }
 
-func (c *Cell) String() string {
+func (c *cell) String() string {
 	column := getColumnLabel(c.column)
 	state := ""
 	if c.covered {
@@ -54,14 +67,36 @@ func (c *Cell) String() string {
 	return fmt.Sprintf("%s%d%s", column, c.value, state)
 }
 
-func (c *Cell) Cover() {
+// Cover sets this cell to covered.
+func (c *cell) Cover() {
 	c.covered = true
 }
 
-// Column is one column of numbers on a single BINGO card.
-type Column struct {
+// column is one column of numbers on a single BINGO card.
+type column struct {
 	number int
-	values []Cell
+	values []cell
+}
+
+func (c *column) label() string {
+	return getColumnLabel(c.number)
+}
+
+func (c *column) getLastRowNum() int {
+	return len(c.values) + 1
+}
+
+func (c *column) isValidRowNum(rowNum int) bool {
+	return rowNum <= c.getLastRowNum()
+}
+
+func (c *column) valueAt(rowNum int) (int, error) {
+	if !c.isValidRowNum(rowNum) {
+		lastLabel := fmt.Sprintf("%s%d", c.label(), c.getLastRowNum())
+		badLabel := fmt.Sprintf("%s%d", c.label(), rowNum)
+		return 0, fmt.Errorf("cannot access row %s beyond last row: %s", badLabel, lastLabel)
+	}
+	return c.values[rowNum-1].value, nil
 }
 
 // validRange returns the column's valid range as [lower,upper].
@@ -70,46 +105,45 @@ type Column struct {
 //	B (1) returns	1,15
 //	I (2) returns	16,30
 //	...
-func validRange(rows, multiple, colNum int) (int, int) {
-	lower := rows*multiple*(colNum-1) + 1
-	upper := rows * multiple * colNum
+func (c *column) validRange(rows, multiple int) (int, int) {
+	lower := rows*multiple*(c.number-1) + 1
+	upper := rows * multiple * c.number
 	return lower, upper
 }
 
 // fill populates the numbers in a column from the valid range.
-func fillColumn(rows, multiple, colNum int) []Cell {
-	col := make([]Cell, 0, rows)
-	cage := NewCage(validRange(rows, multiple))
+func (c *column) fill(rows, multiple int) []cell {
+	c.values = make([]cell, 0, rows)
+	cage := NewCage(c.validRange(rows, multiple))
 	for i := 0; i < rows; i++ {
 		value, _ := cage.Take() // we're careful to avoid empty cages
-		cell := &Cell{column: colNum, value: value}
-		col = append(col, cell)
+		l := cell{column: c.number, value: value}
+		c.values = append(c.values, l)
 	}
-	return col
+	return c.values
 }
 
-func addFreeSlot(col []Cell) {
+func (c *column) addFreeSlot() {
 	fmt.Println("TODO")
 }
 
-type Column []Cell
-
 // Card contains 5 columns of randomized values.
 type Card struct {
-	B        Column
-	I        Column
-	N        Column
-	G        Column
-	O        Column
+	B        *column
+	I        *column
+	N        *column
+	G        *column
+	O        *column
 	rows     int
 	multiple int
 }
 
 // newColumn returns the randomized column for the given column number.
-func (card *Card) newColumn(colNum int) *Column {
-	col := fillColumn(card.rows, card.multiple, colNum)
-	if number == N {
-		addFreeSlot(col)
+func (card *Card) newColumn(colNum int) *column {
+	col := &column{number: colNum}
+	col.fill(card.rows, card.multiple)
+	if colNum == N {
+		col.addFreeSlot()
 	}
 	return col
 }
@@ -123,27 +157,43 @@ func (card *Card) fill() {
 	card.O = card.newColumn(O)
 }
 
-func parseCellName(card *Card, cell string) ([]Cell, int, error) {
-	var (
-		colName string
-		row     int
-	)
-	_, err := fmt.Scanf(strings.NewReader(cell), "%s%d", &colName, &row)
-	if err != nil {
-		return make([]Cell), -1, errors.New("failed to parse cell: %s", cell)
+func (card *Card) columnFrom(colLabel string) (*column, error) {
+	switch colLabel {
+	case "B":
+		return card.B, nil
+	case "I":
+		return card.I, nil
+	case "N":
+		return card.N, nil
+	case "G":
+		return card.G, nil
+	case "O":
+		return card.O, nil
 	}
-	return colName, row, nil
+	return &column{}, fmt.Errorf("column label %s is unrecognized", colLabel)
 }
 
-func (card *Card) ValueAt(cell string) (int, error) {
-	col, row, err := parseCellName(card, cell)
+func (card *Card) ValueAt(cellName string) (int, error) {
+	colLabel, rowNum, err := parseCellName(card, cellName)
+
 	if err != nil {
 		return -1, err
 	}
-	if row > card.rows {
-		return -1, errors.New("parsed row %d > card rows %d", row, card.rows)
+
+	if rowNum > card.rows {
+		return -1, fmt.Errorf("parsed row %d > card rows %d", rowNum, card.rows)
 	}
-	return col[row], nil
+
+	col, err := card.columnFrom(colLabel)
+	if err != nil {
+		return -1, err
+	}
+
+	value, err := col.valueAt(rowNum)
+	if err != nil {
+		return -1, err
+	}
+	return value, nil
 }
 
 // NewCard returns a new Card with 5 columns (B, I, N, G, O), the specified
