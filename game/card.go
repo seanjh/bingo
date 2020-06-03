@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 )
 
 const standardRows = 5     // default number of rows per column
@@ -9,10 +10,15 @@ const standardMultiple = 3 // default multiple of available to possible row valu
 const free = 0             // card "free" space
 
 const (
+	// B column on a BINGO card
 	B = 1
+	// I column on a BINGO card
 	I = 2
+	// N column on a BINGO card
 	N = 3
+	// G column on a BINGO card
 	G = 4
+	// O column on a BINGO card
 	O = 5
 )
 
@@ -55,7 +61,7 @@ func (c *Cell) Cover() {
 // Column is one column of numbers on a single BINGO card.
 type Column struct {
 	number int
-	values []*Cell
+	values []Cell
 }
 
 // validRange returns the column's valid range as [lower,upper].
@@ -64,48 +70,47 @@ type Column struct {
 //	B (1) returns	1,15
 //	I (2) returns	16,30
 //	...
-func (col *Column) validRange(rows, multiple int) (int, int) {
-	lower := rows*multiple*(col.number-1) + 1
-	upper := rows * multiple * col.number
+func validRange(rows, multiple, colNum int) (int, int) {
+	lower := rows*multiple*(colNum-1) + 1
+	upper := rows * multiple * colNum
 	return lower, upper
 }
 
 // fill populates the numbers in a column from the valid range.
-func (col *Column) fill(rows, multiple int) {
-	col.values = make([]*Cell, 0, rows)
-
-	cage := NewCage(col.validRange(rows, multiple))
+func fillColumn(rows, multiple, colNum int) []Cell {
+	col := make([]Cell, 0, rows)
+	cage := NewCage(validRange(rows, multiple))
 	for i := 0; i < rows; i++ {
 		value, _ := cage.Take() // we're careful to avoid empty cages
-		cell := &Cell{column: col.number, value: value}
-		col.values = append(col.values, cell)
+		cell := &Cell{column: colNum, value: value}
+		col = append(col, cell)
 	}
+	return col
 }
 
-func (col *Column) addFreeSlot() {
+func addFreeSlot(col []Cell) {
 	fmt.Println("TODO")
 }
 
+type Column []Cell
+
 // Card contains 5 columns of randomized values.
 type Card struct {
-	B        *Column
-	I        *Column
-	N        *Column
-	G        *Column
-	O        *Column
+	B        Column
+	I        Column
+	N        Column
+	G        Column
+	O        Column
 	rows     int
 	multiple int
 }
 
 // newColumn returns the randomized column for the given column number.
-func (card *Card) newColumn(number int) *Column {
-	col := &Column{number: number}
-	col.fill(card.rows, card.multiple)
-
+func (card *Card) newColumn(colNum int) *Column {
+	col := fillColumn(card.rows, card.multiple, colNum)
 	if number == N {
-		col.addFreeSlot()
+		addFreeSlot(col)
 	}
-
 	return col
 }
 
@@ -116,6 +121,29 @@ func (card *Card) fill() {
 	card.N = card.newColumn(N)
 	card.G = card.newColumn(G)
 	card.O = card.newColumn(O)
+}
+
+func parseCellName(card *Card, cell string) ([]Cell, int, error) {
+	var (
+		colName string
+		row     int
+	)
+	_, err := fmt.Scanf(strings.NewReader(cell), "%s%d", &colName, &row)
+	if err != nil {
+		return make([]Cell), -1, errors.New("failed to parse cell: %s", cell)
+	}
+	return colName, row, nil
+}
+
+func (card *Card) ValueAt(cell string) (int, error) {
+	col, row, err := parseCellName(card, cell)
+	if err != nil {
+		return -1, err
+	}
+	if row > card.rows {
+		return -1, errors.New("parsed row %d > card rows %d", row, card.rows)
+	}
+	return col[row], nil
 }
 
 // NewCard returns a new Card with 5 columns (B, I, N, G, O), the specified
