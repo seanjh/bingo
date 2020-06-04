@@ -34,6 +34,25 @@ func TestStandardCard(t *testing.T) {
 	}
 }
 
+func TestGetColumnLabel(t *testing.T) {
+	cases := []struct {
+		number   int
+		expected string
+	}{
+		{B, "B"},
+		{I, "I"},
+		{N, "N"},
+		{G, "G"},
+		{O, "O"},
+	}
+
+	for _, c := range cases {
+		if actual := getColumnLabel(c.number); actual != c.expected {
+			t.Errorf("getColumnLabel(%d) = %s; want %s", c.number, actual, c.expected)
+		}
+	}
+}
+
 func TestCardValueAt(t *testing.T) {
 	cases := []struct {
 		cellName string
@@ -52,6 +71,11 @@ func TestCardValueAt(t *testing.T) {
 			t.Errorf("%s is %d; want %d", c.cellName, actual, c.expected)
 		}
 	}
+}
+
+func TestCardValueAtError(t *testing.T) {
+	// B99, B0, Z1
+	t.Error("Not Implemented")
 }
 
 func TestCellCovered(t *testing.T) {
