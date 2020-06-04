@@ -15,43 +15,81 @@ func TestStandardCard(t *testing.T) {
 		t.Errorf("standard card multiple = %d; want 3", card.multiple)
 	}
 
-	if len(card.B.values) != 5 {
-		t.Errorf("len(card.B.values) = %d; want 5", len(card.B.values))
+	cases := []struct {
+		colName  string
+		values   []cell
+		expected int
+	}{
+		{"B", card.B.values, 5},
+		{"I", card.I.values, 5},
+		{"N", card.N.values, 5},
+		{"G", card.G.values, 5},
+		{"O", card.O.values, 5},
 	}
-	if len(card.I.values) != 5 {
-		t.Errorf("len(card.I.values) = %d; want 5", len(card.I.values))
-	}
-	if len(card.N.values) != 5 {
-		t.Errorf("len(card.N.values) = %d; want 5", len(card.N.values))
-	}
-	if len(card.G.values) != 5 {
-		t.Errorf("len(card.G.values) = %d; want 5", len(card.G.values))
-	}
-	if len(card.O.values) != 5 {
-		t.Errorf("len(card.O.values) = %d; want 5", len(card.O.values))
+
+	for _, c := range cases {
+		if actual := len(c.values); actual != c.expected {
+			t.Errorf("len(%s) = %d; want %d", c.colName, actual, c.expected)
+		}
 	}
 }
 
-func TestCardFill(t *testing.T) {
-	card := NewCard(1, 1)
-
-	one := &Cell{column: B, value: 1}
-	// TODO(sean): card.B[0] would be a nicer way to access B1
-	// this means card.B is []Cell and Column goes away
-	if actual := card.B.values[0]; actual.value != one.value {
-		t.Errorf("B1 is '%s'; want '%s'", actual, one)
+func TestGetColumnLabel(t *testing.T) {
+	cases := []struct {
+		number   int
+		expected string
+	}{
+		{B, "B"},
+		{I, "I"},
+		{N, "N"},
+		{G, "G"},
+		{O, "O"},
+		{0, ""},
+		{-1, ""},
+		{99, ""},
 	}
+
+	for _, c := range cases {
+		if actual := getColumnLabel(c.number); actual != c.expected {
+			t.Errorf("getColumnLabel(%d) = %s; want %s", c.number, actual, c.expected)
+		}
+	}
+}
+
+func TestCardValueAt(t *testing.T) {
+	cases := []struct {
+		cellName string
+		expected int
+	}{
+		{"B1", 1}, {"I1", 2}, {"N1", 3}, {"G1", 4}, {"O1", 5},
+		//{"B2", 2}, {"I2", 2}, {"N2", free}, {"G2", 2}, {"O2", 2},
+		//{"B3", 3}, {"I3", 3}, {"N3", 3}, {"G3", 3}, {"O3", 3},
+	}
+
+	card := NewCard(1, 1)
+	for _, c := range cases {
+		if actual, err := card.ValueAt(c.cellName); err != nil {
+			t.Errorf("ValueAt(%s) err: '%v'", c.cellName, err)
+		} else if actual != c.expected {
+			t.Errorf("%s is %d; want %d", c.cellName, actual, c.expected)
+		}
+	}
+}
+
+func TestCardValueAtError(t *testing.T) {
+	// B99, B0, Z1
+	t.Error("Not Implemented")
 }
 
 func TestCellCovered(t *testing.T) {
 	cases := []struct {
-		cell     *Cell
+		cell     *cell
 		expected string
 	}{
-		{&Cell{}, "WTF0"},
-		{&Cell{value: 1}, "WTF1"},
-		{&Cell{column: B, value: 1}, "B1"},
-		{&Cell{column: B, value: 1, covered: true}, "B1 - X"},
+		{&cell{}, "0"},
+		{&cell{value: 1}, "1"},
+		{&cell{column: B, value: 1}, "B1"},
+		{&cell{column: B, value: 1, covered: true}, "B1 - X"},
 	}
 
 	for _, c := range cases {
