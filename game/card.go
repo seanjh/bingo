@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 )
 
 const standardRows = 5     // default number of rows per column
@@ -39,14 +40,14 @@ func getColumnLabel(number int) string {
 }
 
 // parseCellName returns the column label and row number for a given cell name (e.g., "B1" -> ("B", 1))
-func parseCellName(card *Card, cellName string) (string, int, error) {
+func parseCellName(cellName string) (string, int, error) {
 	var (
 		colName string
 		row     int
 	)
-	_, err := fmt.Scanf(cellName, "%s%d", &colName, &row)
+	_, err := fmt.Sscanf(cellName, "%1s%d", &colName, &row)
 	if err != nil {
-		return "", 0, fmt.Errorf("failed to parse cell: %s", cellName)
+		return "", nan, fmt.Errorf("failed to parse cell %s: %v", cellName, err)
 	}
 	return colName, row, nil
 }
@@ -90,13 +91,13 @@ func (c *column) isValidRowNum(rowNum int) bool {
 	return rowNum <= c.getLastRowNum()
 }
 
-func (c *column) valueAt(rowNum int) (int, error) {
+func (c *column) cellAt(rowNum int) (cell, error) {
 	if !c.isValidRowNum(rowNum) {
 		lastLabel := fmt.Sprintf("%s%d", c.label(), c.getLastRowNum())
 		badLabel := fmt.Sprintf("%s%d", c.label(), rowNum)
-		return 0, fmt.Errorf("cannot access row %s beyond last row: %s", badLabel, lastLabel)
+		return cell{}, fmt.Errorf("cannot access row %s beyond last row: %s", badLabel, lastLabel)
 	}
-	return c.values[rowNum-1].value, nil
+	return c.values[rowNum-1], nil
 }
 
 // validRange returns the column's valid range as [lower,upper].
@@ -125,6 +126,14 @@ func (c *column) fill(rows, multiple int) []cell {
 
 func (c *column) addFreeSlot() {
 	fmt.Println("TODO")
+}
+
+func (c *column) String() string {
+	values := make([]string, 0, len(c.values))
+	for _, cell := range c.values {
+		values = append(values, cell.String())
+	}
+	return fmt.Sprintf("%s: %s", c.label(), strings.Join(values, ", "))
 }
 
 // Card contains 5 columns of randomized values.
@@ -173,27 +182,37 @@ func (card *Card) columnFrom(colLabel string) (*column, error) {
 	return &column{}, fmt.Errorf("column label %s is unrecognized", colLabel)
 }
 
-func (card *Card) ValueAt(cellName string) (int, error) {
-	colLabel, rowNum, err := parseCellName(card, cellName)
-
+// cellAt returns the cell referenced by the cell name (e.g, "B1").
+func (card *Card) cellAt(cellName string) (cell, error) {
+	colName, rowNum, err := parseCellName(cellName)
 	if err != nil {
-		return -1, err
+		return cell{}, err
 	}
 
 	if rowNum > card.rows {
-		return -1, fmt.Errorf("parsed row %d > card rows %d", rowNum, card.rows)
+		return cell{}, fmt.Errorf("parsed row %d > card rows %d", rowNum, card.rows)
 	}
 
-	col, err := card.columnFrom(colLabel)
+	col, err := card.columnFrom(colName)
 	if err != nil {
-		return -1, err
+		return cell{}, err
 	}
 
-	value, err := col.valueAt(rowNum)
+	result, err := col.cellAt(rowNum)
 	if err != nil {
-		return -1, err
+		return cell{}, err
 	}
-	return value, nil
+
+	return result, nil
+}
+
+// ValueAt returns the value in the specified cell (e.g, "B1").
+func (card *Card) ValueAt(cellName string) (int, error) {
+	cell, err := card.cellAt(cellName)
+	if err != nil {
+		return nan, err
+	}
+	return cell.value, nil
 }
 
 // NewCard returns a new Card with 5 columns (B, I, N, G, O), the specified

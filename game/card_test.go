@@ -32,14 +32,23 @@ func TestStandardCard(t *testing.T) {
 	}
 }
 
-func TestCardFill(t *testing.T) {
-	card := NewCard(1, 1)
+func TestCardValueAt(t *testing.T) {
+	cases := []struct {
+		cellName string
+		expected int
+	}{
+		{"B1", 1}, {"I1", 2}, {"N1", 3}, {"G1", 4}, {"O1", 5},
+		//{"B2", 2}, {"I2", 2}, {"N2", free}, {"G2", 2}, {"O2", 2},
+		//{"B3", 3}, {"I3", 3}, {"N3", 3}, {"G3", 3}, {"O3", 3},
+	}
 
-	one := &cell{column: B, value: 1}
-	// TODO(sean): card.B[0] would be a nicer way to access B1
-	// this means card.B is []cell and Column goes away
-	if actual := card.B.values[0]; actual.value != one.value {
-		t.Errorf("B1 is '%s'; want '%s'", actual, one)
+	card := NewCard(1, 1)
+	for _, c := range cases {
+		if actual, err := card.ValueAt(c.cellName); err != nil {
+			t.Errorf("ValueAt(%s) err: '%v'", c.cellName, err)
+		} else if actual != c.expected {
+			t.Errorf("%s is %d; want %d", c.cellName, actual, c.expected)
+		}
 	}
 }
 
