@@ -44,6 +44,9 @@ func TestGetColumnLabel(t *testing.T) {
 		{N, "N"},
 		{G, "G"},
 		{O, "O"},
+		{0, ""},
+		{-1, ""},
+		{99, ""},
 	}
 
 	for _, c := range cases {
@@ -83,8 +86,8 @@ func TestCellCovered(t *testing.T) {
 		cell     *cell
 		expected string
 	}{
-		{&cell{}, "WTF0"},
-		{&cell{value: 1}, "WTF1"},
+		{&cell{}, "0"},
+		{&cell{value: 1}, "1"},
 		{&cell{column: B, value: 1}, "B1"},
 		{&cell{column: B, value: 1, covered: true}, "B1 - X"},
 	}

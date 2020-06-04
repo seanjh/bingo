@@ -36,7 +36,7 @@ func getColumnLabel(number int) string {
 	case O:
 		return "O"
 	}
-	return "WTF"
+	return ""
 }
 
 // parseCellName returns the column label and row number for a given cell name (e.g., "B1" -> ("B", 1))
