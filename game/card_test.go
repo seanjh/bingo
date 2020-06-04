@@ -15,20 +15,22 @@ func TestStandardCard(t *testing.T) {
 		t.Errorf("standard card multiple = %d; want 3", card.multiple)
 	}
 
-	if len(card.B.values) != 5 {
-		t.Errorf("len(card.B.values) = %d; want 5", len(card.B.values))
+	cases := []struct {
+		colName  string
+		values   []cell
+		expected int
+	}{
+		{"B", card.B.values, 5},
+		{"I", card.I.values, 5},
+		{"N", card.N.values, 5},
+		{"G", card.G.values, 5},
+		{"O", card.O.values, 5},
 	}
-	if len(card.I.values) != 5 {
-		t.Errorf("len(card.I.values) = %d; want 5", len(card.I.values))
-	}
-	if len(card.N.values) != 5 {
-		t.Errorf("len(card.N.values) = %d; want 5", len(card.N.values))
-	}
-	if len(card.G.values) != 5 {
-		t.Errorf("len(card.G.values) = %d; want 5", len(card.G.values))
-	}
-	if len(card.O.values) != 5 {
-		t.Errorf("len(card.O.values) = %d; want 5", len(card.O.values))
+
+	for _, c := range cases {
+		if actual := len(c.values); actual != c.expected {
+			t.Errorf("len(%s) = %d; want %d", c.colName, actual, c.expected)
+		}
 	}
 }
 
