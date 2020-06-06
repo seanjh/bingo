@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"math/rand"
+	"time"
 )
 
 const nan = -1         // invalid number
@@ -34,7 +35,8 @@ func (c *Cage) Take() (int, error) {
 
 // shuffle randomizes the numbers inside the cage.
 func (s *Cage) shuffle() {
-	rand.Shuffle(len(s.Inside), func(i, j int) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r.Shuffle(len(s.Inside), func(i, j int) {
 		s.Inside[i], s.Inside[j] = s.Inside[j], s.Inside[i]
 	})
 }
