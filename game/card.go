@@ -73,24 +73,33 @@ func (c *cell) Cover() {
 	c.covered = true
 }
 
+// markFree sets cell value to free.
+func (c *cell) markFree() {
+	c.value = free
+}
+
 // column is one column of numbers on a single BINGO card.
 type column struct {
 	number int
 	values []cell
 }
 
+// label returns the label for this column's number.
 func (c *column) label() string {
 	return getColumnLabel(c.number)
 }
 
+// getLastRowNum returns the last row number in the column (counting from 1).
 func (c *column) getLastRowNum() int {
 	return len(c.values) + 1
 }
 
+// isValidRowNum returns true when rowNum exists in the column (counting from 1).
 func (c *column) isValidRowNum(rowNum int) bool {
 	return rowNum <= c.getLastRowNum()
 }
 
+// cellAt returns the cell at the specified rowNum (counting from 1).
 func (c *column) cellAt(rowNum int) (cell, error) {
 	if !c.isValidRowNum(rowNum) {
 		lastLabel := fmt.Sprintf("%s%d", c.label(), c.getLastRowNum())
@@ -124,8 +133,21 @@ func (c *column) fill(rows, multiple int) []cell {
 	return c.values
 }
 
+// freeCell returns the center cell in the column (shifted left for even len columns).
+func (c *column) freeCell() *cell {
+	n := len(c.values)
+	if n == 0 {
+		return &cell{}
+	} else if n%2 == 0 {
+		return &c.values[n/2-1] // even
+	}
+	return &c.values[n/2] // odd
+}
+
+// addFreeSlot sets the center "N" cell to free.
 func (c *column) addFreeSlot() {
-	fmt.Println("TODO")
+	cell := c.freeCell()
+	cell.markFree()
 }
 
 func (c *column) String() string {
@@ -166,6 +188,7 @@ func (card *Card) fill() {
 	card.O = card.newColumn(O)
 }
 
+// columnFrom returns the column for the given column label.
 func (card *Card) columnFrom(colLabel string) (*column, error) {
 	switch colLabel {
 	case "B":
@@ -190,7 +213,9 @@ func (card *Card) cellAt(cellName string) (cell, error) {
 	}
 
 	if rowNum > card.rows {
-		return cell{}, fmt.Errorf("parsed row %d > card rows %d", rowNum, card.rows)
+		return cell{}, fmt.Errorf("parsed row %d; want row <= %d", rowNum, card.rows)
+	} else if rowNum < 1 {
+		return cell{}, fmt.Errorf("parsed row %d; want > 1", rowNum)
 	}
 
 	col, err := card.columnFrom(colName)
