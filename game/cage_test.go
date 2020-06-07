@@ -85,6 +85,7 @@ func TestTakeAll(t *testing.T) {
 	}{
 		{NewCage(1, 2), []int{1, 2}},
 		{NewCage(1, 5), []int{1, 2, 3, 4, 5}},
+		{NewCage(5, 7), []int{5, 6, 7}},
 	}
 
 	for _, c := range cases {
