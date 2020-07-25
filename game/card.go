@@ -9,7 +9,7 @@ const standardNumRows = 5     // default number of rows per column
 const standardMultiple = 3    // default multiple of available to possible row values
 const free = 0                // card "free" space
 const invalidColumnName = "_" // invalid column name
-const invalidColumnNum = 0
+const invalidColumnNum = -1
 
 const (
 	// B column on a BINGO card
@@ -95,33 +95,25 @@ func addFreeSlot(col []*cell) {
 
 // Card contains 5 columns of randomized values.
 type Card struct {
-	rows [][]*cell
+	rows    [][]*cell
+	columns [][]*cell
 	//lookup   map[string]*cell  (e.g., B1)
 }
 
-// column returns a new slice containing the column's cells.
-func (card *Card) column(colNum int) []*cell {
-	result := make([]*cell, 0, len(card.rows))
-	for _, row := range card.rows {
-		result = append(result, row[colNum-1])
-	}
-	return result
-}
+// B returns the slice containing the B column's cells.
+func (card *Card) B() []*cell { return card.columns[B-1] }
 
-// B returns a new slice containing the B column's cells.
-func (card *Card) B() []*cell { return card.column(B) }
+// I returns the slice containing the I column's cells.
+func (card *Card) I() []*cell { return card.columns[I-1] }
 
-// I returns a new slice containing the I column's cells.
-func (card *Card) I() []*cell { return card.column(I) }
+// N returns the slice containing the N column's cells.
+func (card *Card) N() []*cell { return card.columns[N-1] }
 
-// N returns a new slice containing the N column's cells.
-func (card *Card) N() []*cell { return card.column(N) }
+// G returns the slice containing the G column's cells.
+func (card *Card) G() []*cell { return card.columns[G-1] }
 
-// G returns a new slice containing the G column's cells.
-func (card *Card) G() []*cell { return card.column(G) }
-
-// O returns a new slice containing the O column's cells.
-func (card *Card) O() []*cell { return card.column(O) }
+// O returns the slice containing the O column's cells.
+func (card *Card) O() []*cell { return card.columns[O-1] }
 
 // lastRowNum returns the last row number on the card.
 func (card *Card) lastRowNum() int {
@@ -141,30 +133,48 @@ func (card *Card) getRow(rowNum int) (error, []*cell) {
 	return fmt.Errorf("Invalid row number: %d from %d", rowNum, len(card.rows)), []*cell{}
 }
 
-// fillColumn populates the column of cells with values from a new cage.
-func (card *Card) fillColumn(col []*cell, colNum, numRows, multiple int) {
-	cage := NewCage(validColumnRange(colNum, numRows, multiple))
-	for i, l := range col {
+// fillCells populates the cells with values from a new cage.
+func (card *Card) fillCol(cells []*cell, cage *Cage, colNum int) {
+	for i := 0; i < len(cells); i++ {
 		value, _ := cage.Take() // we're careful to avoid empty cages
-		l.column = colNum
-		l.row = i + 1
-		l.value = value
+		l := &cell{
+			column: colNum,
+			row:    i + 1,
+			value:  value,
+		}
+		cells[i] = l
+	}
+}
+
+func (card *Card) rowFromColumns(rowNum int) []*cell {
+	return []*cell{
+		card.B()[rowNum-1],
+		card.I()[rowNum-1],
+		card.N()[rowNum-1],
+		card.G()[rowNum-1],
+		card.O()[rowNum-1],
 	}
 }
 
 // fill populates the BINGO card columns with values in their valid range.
 func (card *Card) fill(numRows, multiple int) {
-	card.rows = make([][]*cell, 0, numRows)
-	for i := 0; i < numRows; i++ {
-		row := make([]*cell, 0, numColumns)
-		card.rows = append(card.rows, row)
-	}
-	for colNum := B; colNum <= numColumns; colNum++ {
-		col := card.column(colNum)
-		card.fillColumn(col, colNum, numRows, multiple)
+	// TODO(sean): tidy
+	card.columns = make([][]*cell, numColumns)
+	for colNum := B; colNum <= O; colNum++ {
+		// create new column
+		col := make([]*cell, numRows)
+		cage := NewCage(validColumnRange(colNum, numRows, multiple))
+		card.fillCol(col, cage, colNum)
 		if colNum == N {
 			addFreeSlot(col)
 		}
+		card.columns[colNum-1] = col
+	}
+
+	card.rows = make([][]*cell, numRows)
+	for i := 0; i < numRows; i++ {
+		// create row from columns
+		card.rows[i] = card.rowFromColumns(i + 1)
 	}
 }
 
@@ -186,7 +196,10 @@ func (card *Card) cellAt(cellName string) (*cell, error) {
 	}
 	colNum := getColumnNum(colName)
 
-	return card.rows[rowNum][colNum-1], nil
+	fmt.Printf("cellName: %s, colName: %s, rowNum: %d\n", cellName, colName, rowNum)
+	fmt.Printf("rows=%d, columns=%d\n", len(card.rows), len(card.columns))
+	fmt.Printf("rowNum=%d, colNum=%d, card=%v\n", rowNum, colNum, card)
+	return card.rows[rowNum-1][colNum-1], nil
 }
 
 // ValueAt returns the value in the specified cell (e.g, "B1").
@@ -210,6 +223,11 @@ func NewCard(numRows, multiple int) *Card {
 	card := &Card{}
 	card.fill(numRows, multiple)
 	return card
+}
+
+// NullCard returns a new empty Card.
+func NullCard() *Card {
+	return &Card{[][]*cell{}, [][]*cell{}}
 }
 
 // NewStandardCard returns a standard 5x5 BINGO card.
