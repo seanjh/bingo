@@ -9,7 +9,7 @@ const standardNumRows = 5     // default number of rows per column
 const standardMultiple = 3    // default multiple of available to possible row values
 const free = 0                // card "free" space
 const invalidColumnName = "_" // invalid column name
-const invalidColumnNum = -1
+const invalidColumnNum = -99
 
 const (
 	// B column on a BINGO card
@@ -191,14 +191,13 @@ func (card *Card) cellAt(cellName string) (*cell, error) {
 		return &cell{}, fmt.Errorf("parsed row %d from cell '%s'; want > 1", rowNum, cellName)
 	}
 
-	if colName == invalidColumnName {
-		return &cell{}, fmt.Errorf("Invalid column name for cell '%s'", cellName)
-	}
 	colNum := getColumnNum(colName)
+	if colNum == invalidColumnNum {
+		return &cell{}, fmt.Errorf("Invalid column for cell '%s'", cellName)
+	}
 
-	fmt.Printf("cellName: %s, colName: %s, rowNum: %d\n", cellName, colName, rowNum)
-	fmt.Printf("rows=%d, columns=%d\n", len(card.rows), len(card.columns))
-	fmt.Printf("rowNum=%d, colNum=%d, card=%v\n", rowNum, colNum, card)
+	fmt.Printf("cellName: %s, colName: %s, colNum:%d, rowNum: %d\n", cellName, colName, colNum, rowNum)
+	fmt.Printf("rows=%d, columns=%d, card=%v\n", len(card.rows), len(card.columns), card)
 	return card.rows[rowNum-1][colNum-1], nil
 }
 
