@@ -196,8 +196,6 @@ func (card *Card) cellAt(cellName string) (*cell, error) {
 		return &cell{}, fmt.Errorf("Invalid column for cell '%s'", cellName)
 	}
 
-	fmt.Printf("cellName: %s, colName: %s, colNum:%d, rowNum: %d\n", cellName, colName, colNum, rowNum)
-	fmt.Printf("rows=%d, columns=%d, card=%v\n", len(card.rows), len(card.columns), card)
 	return card.rows[rowNum-1][colNum-1], nil
 }
 
