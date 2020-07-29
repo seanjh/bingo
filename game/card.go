@@ -117,7 +117,7 @@ func (card *Card) O() []*cell { return card.columns[O-1] }
 
 // lastRowNum returns the last row number on the card.
 func (card *Card) lastRowNum() int {
-	return len(card.rows) + 1
+	return len(card.rows)
 }
 
 // isValidRowNum returns true if the row number exists in the card
