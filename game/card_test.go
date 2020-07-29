@@ -1,11 +1,10 @@
 package game
 
 import (
-	"fmt"
 	"testing"
 )
 
-func TestGetColumnLabel(t *testing.T) {
+func TestGetColumnName(t *testing.T) {
 	cases := []struct {
 		number   int
 		expected string
@@ -15,79 +14,30 @@ func TestGetColumnLabel(t *testing.T) {
 		{N, "N"},
 		{G, "G"},
 		{O, "O"},
-		{0, ""},
-		{-1, ""},
-		{99, ""},
+		{0, "_"},
+		{-1, "_"},
+		{99, "_"},
 	}
 
 	for _, c := range cases {
-		if actual := getColumnLabel(c.number); actual != c.expected {
-			t.Errorf("getColumnLabel(%d) = %s; want %s", c.number, actual, c.expected)
+		if actual := getColumnName(c.number); actual != c.expected {
+			t.Errorf("getColumnName(%d) = %s; want %s", c.number, actual, c.expected)
 		}
 	}
 }
 
-func TestParseCellName(t *testing.T) {
+func TestCellAt(t *testing.T) {
 	cases := []struct {
 		cellName string
-		colLabel string
-		rowNum   int
+		expected cell
 	}{
-		{"B1", "B", 1},
-		{"B0", "B", 0},
-		{"A99", "A", 99},
-		{"Z-1", "Z", -1},
+		{"", cell{}},
 	}
 
+	card := &Card{}
 	for _, c := range cases {
-		colLabel, rowNum, err := parseCellName(c.cellName)
-		if err != nil {
-			t.Errorf("parseCellName err = %v; want nil", err)
-		}
-		if colLabel != c.colLabel {
-			t.Errorf("parseCellName colLabel = %s; want %s", colLabel, c.colLabel)
-		}
-		if rowNum != c.rowNum {
-			t.Errorf("parseCellName rowNum = %d; want %d", rowNum, c.rowNum)
-		}
-	}
-}
-
-func TestParseCellNameErrors(t *testing.T) {
-	cases := []string{
-		"X",
-		"",
-		"ABC",
-	}
-
-	for _, cellName := range cases {
-		colName, rowNum, err := parseCellName(cellName)
-		if err == nil {
-			t.Errorf(
-				"parseCellName err = nil, colName = %s, rowNum = %d; want err",
-				colName, rowNum)
-		}
-	}
-}
-
-func TestColumnLabel(t *testing.T) {
-	cases := []struct {
-		col      column
-		expected string
-	}{
-		{column{B, []cell{}}, "B"},
-		{column{I, []cell{}}, "I"},
-		{column{N, []cell{}}, "N"},
-		{column{G, []cell{}}, "G"},
-		{column{O, []cell{}}, "O"},
-		{column{0, []cell{}}, ""},
-		{column{99, []cell{}}, ""},
-		{column{-1, []cell{}}, ""},
-	}
-
-	for _, c := range cases {
-		if actual := c.col.label(); actual != c.expected {
-			t.Errorf("col.label() = %s; want %s", actual, c.expected)
+		if actual, _ := card.cellAt(c.cellName); *actual != c.expected {
+			t.Errorf("card cell at '%s' = %v; want %v", c.cellName, actual, c.expected)
 		}
 	}
 }
@@ -95,23 +45,20 @@ func TestColumnLabel(t *testing.T) {
 func TestStandardCard(t *testing.T) {
 	card := NewStandardCard()
 
-	if card.rows != 5 {
-		t.Errorf("standard card rows = %d; want 5", card.rows)
-	}
-	if card.multiple != 3 {
-		t.Errorf("standard card multiple = %d; want 3", card.multiple)
+	if last := card.lastRowNum(); last != 5 {
+		t.Errorf("standard card last row = %d; want 5", last)
 	}
 
 	cases := []struct {
 		colName  string
-		values   []cell
+		values   []*cell
 		expected int
 	}{
-		{"B", card.B.values, 5},
-		{"I", card.I.values, 5},
-		{"N", card.N.values, 5},
-		{"G", card.G.values, 5},
-		{"O", card.O.values, 5},
+		{"B", card.B(), 5},
+		{"I", card.I(), 5},
+		{"N", card.N(), 5},
+		{"G", card.G(), 5},
+		{"O", card.O(), 5},
 	}
 
 	for _, c := range cases {
@@ -162,32 +109,13 @@ func TestCardValueAtError(t *testing.T) {
 
 func TestFreeCell(t *testing.T) {
 	cases := []struct {
-		col      column
+		col      []*cell
 		expected *cell
 	}{}
 
 	for _, c := range cases {
-		if actual := c.col.freeCell(); actual != c.expected {
-			t.Errorf("col.freeCell() = %v; want %v", actual, c.expected)
-		}
-	}
-}
-
-func TestCellCovered(t *testing.T) {
-	cases := []struct {
-		cell     *cell
-		expected string
-	}{
-		{&cell{}, "0"},
-		{&cell{value: 1}, "1"},
-		{&cell{column: B, value: 1}, "B1"},
-		{&cell{column: B, value: 1, covered: true}, "B1 - X"},
-	}
-
-	for _, c := range cases {
-		actual := fmt.Sprintf("%s", c.cell)
-		if actual != c.expected {
-			t.Errorf("cell.String() = %s; want %s", actual, c.expected)
+		if actual := freeCell(c.col); actual != c.expected {
+			t.Errorf("freeCell = %v; want %v", actual, c.expected)
 		}
 	}
 }
