@@ -16,7 +16,7 @@ type cell struct {
 func (c *cell) String() string {
 	state := ":"
 	if c.covered {
-		state = "["
+		state = "|"
 	}
 	return fmt.Sprintf("%s%d%s%d", getColumnName(c.column), c.row, state, c.value)
 }

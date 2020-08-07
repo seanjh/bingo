@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"math/rand"
-	"time"
 )
 
 const nan = -1         // invalid number
@@ -14,6 +13,32 @@ const standardMax = 75 // standard maximum value in BINGO
 type Cage struct {
 	Inside  []int
 	Outside []int
+	rng     *rand.Rand
+}
+
+// NewCage returns a new cage with all the numbers in the range [min,max].
+func NewCage(min, max int) *Cage {
+	inside := make([]int, 0, max)
+	for val := min; val <= max; val++ {
+		inside = append(inside, val)
+	}
+	cage := &Cage{
+		Inside:  inside,
+		Outside: make([]int, 0, max),
+		rng:     NewRng(),
+	}
+	cage.shuffle()
+	return cage
+}
+
+// NewStandardCage returns a new cage with numbers in the standard range [1,75].
+func NewStandardCage() *Cage {
+	return NewCage(standardMin, standardMax)
+}
+
+// NullCage returns a new empty cage
+func NullCage() *Cage {
+	return &Cage{}
 }
 
 // IsEmpty returns true if the cage has no remaining numbers inside.
@@ -34,28 +59,8 @@ func (c *Cage) Take() (int, error) {
 }
 
 // shuffle randomizes the numbers inside the cage.
-func (s *Cage) shuffle() {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	r.Shuffle(len(s.Inside), func(i, j int) {
-		s.Inside[i], s.Inside[j] = s.Inside[j], s.Inside[i]
+func (c *Cage) shuffle() {
+	c.rng.Shuffle(len(c.Inside), func(i, j int) {
+		c.Inside[i], c.Inside[j] = c.Inside[j], c.Inside[i]
 	})
-}
-
-// NewCage returns a new cage with all the numbers in the range [min,max].
-func NewCage(min, max int) *Cage {
-	inside := make([]int, 0, max)
-	for val := min; val <= max; val++ {
-		inside = append(inside, val)
-	}
-	var cage = &Cage{
-		Inside:  inside,
-		Outside: make([]int, 0, max),
-	}
-	cage.shuffle()
-	return cage
-}
-
-// NewStandardCage returns a new cage with numbers in the standard range [1,75].
-func NewStandardCage() *Cage {
-	return NewCage(standardMin, standardMax)
 }
