@@ -17,6 +17,7 @@ func safeSeed() int64 {
 	return result
 }
 
+// NewRng returns a math.rand.Rand seeded with a safe random value.
 func NewRng() *mrand.Rand {
 	seed := safeSeed()
 	source := mrand.NewSource(seed)
