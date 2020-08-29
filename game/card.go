@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 )
 
 const numColumns = 5          // fixed number of columns
@@ -51,10 +52,10 @@ func (card *Card) G() []*cell { return card.columns[G-1] }
 // O returns the slice containing the O column's cells.
 func (card *Card) O() []*cell { return card.columns[O-1] }
 
-// IsWinner returns true if the card matches the pattern.
-func (*Card) IsWinner() bool {
-	fmt.Println("Not Implemeneted")
-	return false
+// isWinner returns true if the card matches the pattern.
+func (*Card) isWinner() bool {
+	log.Print("Not Implemeneted")
+	return true
 }
 
 // ValueAt returns the value in the specified cell (e.g, "B1").
@@ -87,6 +88,9 @@ func (card *Card) cellAt(cellName string) (*cell, error) {
 	return card.rows[rowNum-1][colNum-1], nil
 }
 
+// TODO: Implement
+func (c *Card) cover(pull int) {}
+
 // fill populates the BINGO card columns with values in their valid range.
 func (card *Card) fill(numRows, multiple int) {
 	// TODO(sean): tidy
@@ -112,7 +116,7 @@ func (card *Card) fill(numRows, multiple int) {
 // fillCells populates the cells with values from a new cage.
 func (card *Card) fillCol(cells []*cell, cage *Cage, colNum int) {
 	for i := 0; i < len(cells); i++ {
-		value, _ := cage.Take() // we're careful to avoid empty cages
+		value, _ := cage.take() // we're careful to avoid empty cages
 		l := &cell{
 			column: colNum,
 			row:    i + 1,

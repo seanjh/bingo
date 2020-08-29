@@ -9,6 +9,8 @@ const nan = -1         // invalid number
 const standardMin = 1  // standard minimum value in BINGO
 const standardMax = 75 // standard maximum value in BINGO
 
+var EmptyCage = errors.New("Empty cage")
+
 // Cage holds the BINGO balls for a round.
 type Cage struct {
 	Inside  []int
@@ -46,10 +48,10 @@ func (c *Cage) IsEmpty() bool {
 	return len(c.Inside) < 1
 }
 
-// Take returns and moves a number from inside to outside the cage.
-func (c *Cage) Take() (int, error) {
+// take returns and moves a number from inside to outside the cage.
+func (c *Cage) take() (int, error) {
 	if c.IsEmpty() {
-		return nan, errors.New("Cannot take from empty cage")
+		return nan, EmptyCage
 	}
 	c.shuffle()                           // variety is the spice of life
 	value := c.Inside[len(c.Inside)-1]    // take the last ball

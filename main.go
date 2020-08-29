@@ -1,12 +1,15 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/seanjh/bingo/game"
 )
 
 func main() {
-	fmt.Println("something will happen here")
-	game.NewStandardRound(1)
+	log.Print("Starting a new BINGO round")
+	round := game.NewStandardRound(1)
+	log.Print("Running simulation...")
+	winners := round.Simulate()
+	log.Printf("Winners: %v\n", winners)
 }

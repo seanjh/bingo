@@ -3,7 +3,7 @@ package game
 import (
 	crand "crypto/rand"
 	"encoding/binary"
-	"fmt"
+	"log"
 	mrand "math/rand"
 )
 
@@ -11,7 +11,7 @@ func safeSeed() int64 {
 	var result int64
 	err := binary.Read(crand.Reader, binary.LittleEndian, &result)
 	if err != nil {
-		fmt.Println("failed to read crypto/rand.Reader")
+		log.Print("failed to read crypto/rand.Reader")
 		return 0
 	}
 	return result

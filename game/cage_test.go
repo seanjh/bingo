@@ -25,13 +25,13 @@ func TestCageEmpty(t *testing.T) {
 		t.Errorf("Cage len Inside = %d; want 1", len(cage.Inside))
 	}
 
-	val, err := cage.Take()
+	val, err := cage.take()
 	if err != nil {
-		t.Errorf("Take() err = %v; want nil", err)
+		t.Errorf("take() err = %v; want nil", err)
 	}
 
 	if val != 1 {
-		t.Errorf("Take() value = %d; want 1", val)
+		t.Errorf("take() value = %d; want 1", val)
 	}
 
 	if len(cage.Inside) != 0 {
@@ -49,10 +49,10 @@ func TestCageEmpty(t *testing.T) {
 
 func TestTakeEmpty(t *testing.T) {
 	cage := NewCage(1, 1)
-	cage.Take()
-	_, err := cage.Take()
+	cage.take()
+	_, err := cage.take()
 	if err == nil {
-		t.Error("Take() err is nil; want error for empty cage")
+		t.Error("take() err is nil; want error for empty cage")
 	}
 }
 
@@ -68,12 +68,12 @@ func TestTakeSolitary(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual, err := c.cage.Take()
+		actual, err := c.cage.take()
 		if err != nil {
 			t.Errorf("cage err = %v; want nil", err)
 		}
 		if actual != c.expected {
-			t.Errorf("cage Take() = %d; want %d", actual, c.expected)
+			t.Errorf("cage take() = %d; want %d", actual, c.expected)
 		}
 	}
 }
@@ -93,7 +93,7 @@ func TestTakeAll(t *testing.T) {
 
 		// take all values
 		for !c.cage.IsEmpty() {
-			value, _ := c.cage.Take()
+			value, _ := c.cage.take()
 			actual = append(actual, value)
 		}
 
