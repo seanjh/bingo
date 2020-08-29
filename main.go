@@ -1,7 +1,15 @@
 package main
 
-import "github.com/seanjh/bingo/game"
+import (
+	"log"
+
+	"github.com/seanjh/bingo/game"
+)
 
 func main() {
-	game.NewStandardRound(1)
+	log.Print("Starting a new BINGO round")
+	round := game.NewStandardRound(1)
+	log.Print("Running simulation...")
+	winners := round.Simulate()
+	log.Printf("Winners: %v\n", winners)
 }

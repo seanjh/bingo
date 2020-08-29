@@ -13,7 +13,8 @@ func TestCellCovered(t *testing.T) {
 		{&cell{}, "_0:0"},
 		{&cell{value: 1}, "_0:1"},
 		{&cell{column: B, row: 1, value: 1}, "B1:1"},
-		{&cell{column: B, row: 1, value: 1, covered: true}, "B1[1"},
+		{&cell{column: B, row: 1, value: 1, covered: true}, "B1|1"},
+		{&cell{column: O, row: 20, value: 50}, "O20:50"},
 	}
 
 	for _, c := range cases {

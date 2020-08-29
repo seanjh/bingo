@@ -12,10 +12,14 @@ type Pattern interface {
 	isWinner(*Card) bool
 }
 
-type across struct{}
+type any struct{}
+
+func (p *any) isWinner(card *Card) bool { return true }
+
+type horizontal struct{}
 
 // isWinningRow returns true if all cells in the row are marked.
-func (p *across) isWinningRow(row []*cell) bool {
+func (p *horizontal) isWinningRow(row []*cell) bool {
 	for _, l := range row {
 		if !l.covered {
 			return false
@@ -26,7 +30,7 @@ func (p *across) isWinningRow(row []*cell) bool {
 
 // isWinner returns true and the winning cells if the card includes
 // a row with all cells marked.
-func (p *across) isWinner(card *Card) bool {
+func (p *horizontal) isWinner(card *Card) bool {
 	for _, row := range card.rows {
 		if p.isWinningRow(row) {
 			return true
@@ -34,3 +38,6 @@ func (p *across) isWinner(card *Card) bool {
 	}
 	return false
 }
+
+// any line pattern
+// composed of horizontal, vertical, and diagonal patterns
