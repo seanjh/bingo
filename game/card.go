@@ -101,12 +101,7 @@ func (c *Card) cover(pull int) {
 			cell.Cover()
 		}
 	}
-
-	return card.rows[rowNum-1][colNum-1], nil
 }
-
-// TODO: Implement
-func (c *Card) cover(pull int) {}
 
 // fill populates the BINGO card columns with values in their valid range.
 func (card *Card) fill(numRows int) {
