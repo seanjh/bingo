@@ -2,7 +2,7 @@ package game
 
 import "testing"
 
-func TestLinehorizontal(t *testing.T) {
+func TestLineHorizontal(t *testing.T) {
 	cases := []int{0, 1, 2, 3, 4}
 	for _, i := range cases {
 		c := NewStandardCard()

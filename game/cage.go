@@ -8,7 +8,6 @@ import (
 const nan = -1         // invalid number
 const standardMin = 1  // standard minimum value in BINGO
 const standardMax = 75 // standard maximum value in BINGO
-
 var EmptyCage = errors.New("Empty cage")
 
 // Cage holds the BINGO balls for a round.
@@ -48,6 +47,13 @@ func (c *Cage) IsEmpty() bool {
 	return len(c.Inside) < 1
 }
 
+// shuffle randomizes the numbers inside the cage.
+func (c *Cage) shuffle() {
+	c.rng.Shuffle(len(c.Inside), func(i, j int) {
+		c.Inside[i], c.Inside[j] = c.Inside[j], c.Inside[i]
+	})
+}
+
 // take returns and moves a number from inside to outside the cage.
 func (c *Cage) take() (int, error) {
 	if c.IsEmpty() {
@@ -58,11 +64,4 @@ func (c *Cage) take() (int, error) {
 	c.Inside = c.Inside[:len(c.Inside)-1] // remove the last ball Inside
 	c.Outside = append(c.Outside, value)  // add the last ball Outside
 	return value, nil
-}
-
-// shuffle randomizes the numbers inside the cage.
-func (c *Cage) shuffle() {
-	c.rng.Shuffle(len(c.Inside), func(i, j int) {
-		c.Inside[i], c.Inside[j] = c.Inside[j], c.Inside[i]
-	})
 }

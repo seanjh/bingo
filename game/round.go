@@ -7,14 +7,10 @@ import (
 // Round represents a round of BINGO, including the cage of numbers
 // and any cards in play.
 type Round struct {
-	// ball cage
-	cage *Cage
-	// cards playing
-	cards []*Card
-	// winning pattern
-	pattern Pattern
-	// reference card
-	refCard *Card
+	cage    *Cage   // ball cage
+	cards   []*Card // cards playing
+	pattern Pattern // winning pattern
+	refCard *Card   // reference card
 }
 
 // NewStandardRound returns a standard cage and cards for one round of BINGO.
@@ -33,20 +29,18 @@ func NewStandardRound(numCards int) *Round {
 	return &Round{cage: cage, cards: cards, pattern: &any{}, refCard: refCard}
 }
 
-func (r *Round) hasWinner() bool {
-	return true
-}
-
+// annouce applies the pull to all cards in the round.
 func (r *Round) annouce(pull int) {
 	for _, card := range r.cards {
 		card.cover(pull)
 	}
 }
 
+// winners returns the winning cards in the round.
 func (r *Round) winners() []*Card {
 	winners := make([]*Card, 0, len(r.cards))
 	for _, card := range r.cards {
-		if card.isWinner() {
+		if r.pattern.isWinner(card) {
 			winners = append(winners, card)
 		}
 	}

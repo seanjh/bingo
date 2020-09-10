@@ -1,5 +1,9 @@
 package game
 
+import (
+	"math"
+)
+
 const (
 	// B column on a BINGO card
 	B = 1
@@ -80,4 +84,10 @@ func validColumnRange(colNum, numRows, multiple int) (int, int) {
 	lower := numRows*multiple*(colNum-1) + 1
 	upper := numRows * multiple * colNum
 	return lower, upper
+}
+
+func columnForPull(pull int, card *Card) int {
+	raw := float64(pull) / float64(len(card.rows)) / float64(card.multiple)
+	colNum := math.Ceil(raw)
+	return int(colNum)
 }

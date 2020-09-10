@@ -14,16 +14,16 @@ const invalidColumnNum = -99
 
 // Card contains 5 columns of randomized values.
 type Card struct {
-	rows    [][]*cell
-	columns [][]*cell
-	//lookup   map[string]*cell  (e.g., B1)
+	rows     [][]*cell // rows is a 2D slice, each element containing 1 row of cells
+	columns  [][]*cell // columns is 2D slice, each element containing 1 column of cells
+	multiple int       // multiple*len(rows)*len(columns) represents the max possible cage value
 }
 
 // NewCard returns a new Card with 5 columns (B, I, N, G, O), the specified
 // number of rows, and values randomly populated from the range [1,5*rows*multiple].
 func NewCard(numRows, multiple int) *Card {
-	card := &Card{}
-	card.fill(numRows, multiple)
+	card := &Card{multiple: multiple}
+	card.fill(numRows)
 	return card
 }
 
@@ -34,7 +34,7 @@ func NewStandardCard() *Card {
 
 // NullCard returns a new empty Card.
 func NullCard() *Card {
-	return &Card{[][]*cell{}, [][]*cell{}}
+	return &Card{[][]*cell{}, [][]*cell{}, 0}
 }
 
 // B returns the slice containing the B column's cells.
@@ -88,17 +88,29 @@ func (card *Card) cellAt(cellName string) (*cell, error) {
 	return card.rows[rowNum-1][colNum-1], nil
 }
 
-// TODO: Implement
-func (c *Card) cover(pull int) {}
+// max returns the maximum possible value on the card.
+func (c *Card) max() int {
+	return len(c.rows) * len(c.columns) * c.multiple
+}
+
+func (c *Card) cover(pull int) {
+	colNum := columnForPull(pull, c)
+	col := c.columns[colNum-1]
+	for _, cell := range col {
+		if cell.value == pull {
+			cell.Cover()
+		}
+	}
+}
 
 // fill populates the BINGO card columns with values in their valid range.
-func (card *Card) fill(numRows, multiple int) {
+func (card *Card) fill(numRows int) {
 	// TODO(sean): tidy
 	card.columns = make([][]*cell, numColumns)
 	for colNum := B; colNum <= O; colNum++ {
 		// create new column
 		col := make([]*cell, numRows)
-		cage := NewCage(validColumnRange(colNum, numRows, multiple))
+		cage := NewCage(validColumnRange(colNum, numRows, card.multiple))
 		card.fillCol(col, cage, colNum)
 		if colNum == N {
 			addFreeSlot(col)
