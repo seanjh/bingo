@@ -38,3 +38,6 @@ func (p *horizontal) isWinner(card *Card) bool {
 	}
 	return false
 }
+
+// any line pattern
+// composed of horizontal, vertical, and diagonal patterns

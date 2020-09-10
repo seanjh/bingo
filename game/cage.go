@@ -10,6 +10,8 @@ const standardMin = 1  // standard minimum value in BINGO
 const standardMax = 75 // standard maximum value in BINGO
 var EmptyCage = errors.New("Empty cage")
 
+var EmptyCage = errors.New("Empty cage")
+
 // Cage holds the BINGO balls for a round.
 type Cage struct {
 	Inside  []int
