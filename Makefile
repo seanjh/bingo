@@ -8,3 +8,7 @@ MAKEFLAGS += --no-builtin-rules
 .PHONY: test
 test:
 	@go test ./...
+
+.PHONY: up
+up:
+	@go run ./server

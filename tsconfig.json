@@ -1,0 +1,9 @@
+{
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./client/dist"
+  },
+  "include": ["**/*"],
+  "rootDir": "./client",
+  "sourceMap": true
+}

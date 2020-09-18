@@ -1,28 +1,42 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
 )
 
+type foo struct {
+	Message string `json:"message"`
+	Value   int    `json:"value"`
+}
+
 type handler = func(http.ResponseWriter, *http.Request)
 
-func logRequestMiddleware(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func logRequestMiddleware(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		dump, err := httputil.DumpRequest(req, true)
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("%q", dump)
-		handler(w, req)
+		h(w, req)
 	}
 }
 
 func main() {
 	http.HandleFunc("/", logRequestMiddleware(func(w http.ResponseWriter, req *http.Request) {
 		io.WriteString(w, "Hello, foo!\n")
+	}))
+	http.HandleFunc("/api", logRequestMiddleware(func(w http.ResponseWriter, req *http.Request) {
+		data, err := json.MarshalIndent(foo{Message: "hello, world", Value: 42}, "", "\t")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		io.WriteString(w, string(data)+"\n")
 	}))
 	log.Println("starting server")
 	log.Fatal(http.ListenAndServe(":8080", nil))
