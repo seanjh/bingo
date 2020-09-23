@@ -1,0 +1,18 @@
+---
+version: "3.8"
+
+services:
+  db:
+    command: >-
+      -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar
+      -sharedDb -delayTransientStatuses
+      -dbPath /var/dynamodb
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - app:/var/dynamodb
+
+volumes:
+  app:
