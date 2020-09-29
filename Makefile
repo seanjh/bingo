@@ -5,10 +5,13 @@ SHELL := bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 
-.PHONY: test
-test:
-	@go test ./...
+.PHONY: build
+build: clean backend/bin/server
 
-.PHONY: up
-up:
-	@go run ./server
+.PHONY: clean
+clean:
+	@rm -f backend/bin/*
+
+backend/bin/server: backend/cmd/bingo-local/main.go
+	@cd backend
+	@go build -o bin/server ./cmd/bingo-local
