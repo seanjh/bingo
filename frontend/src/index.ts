@@ -1,5 +1,12 @@
 import { fromEvent } from 'rxjs';
 
-import { MESSAGE } from './const';
+const eventSource = new EventSource('//localhost:8000/api/v1/subscribe/bar');
+const eventSourceMessages = fromEvent(eventSource, 'onmessage');
 
-fromEvent(document, 'click').subscribe(() => console.log('message: %s', MESSAGE));
+eventSourceMessages.subscribe((event) => {
+  console.log('event: %j', event);
+  const elem = document.getElementById('output');
+  if (elem) {
+    elem.innerText = `${elem.innerText ?? ''}\n${event.toString()}`;
+  }
+});

@@ -28,7 +28,7 @@ func main() {
 
 	router := api.NewApiRouter()
 	server := &http.Server{
-		Addr:         "0.0.0.0:8080",
+		Addr:         "0.0.0.0:8000",
 		WriteTimeout: time.Second * defaultTimeout,
 		ReadTimeout:  time.Second * defaultTimeout,
 		IdleTimeout:  time.Second * defaultIdleTimout,

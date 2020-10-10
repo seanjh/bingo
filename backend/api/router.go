@@ -8,7 +8,8 @@ func NewApiRouter() *mux.Router {
 	r := mux.NewRouter()
 	s := r.PathPrefix("/api/v1").Subrouter()
 
-	s.HandleFunc("/subscribe", Subscribe)
+	b := NewBroker()
+	s.HandleFunc("/subscribe/{clientId}", subscribe(b)).Methods("GET")
 
 	s.HandleFunc("/game", CreateGame).Methods("POST")
 

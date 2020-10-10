@@ -14,4 +14,8 @@ clean:
 
 backend/bin/server: backend/cmd/bingo-local/main.go
 	@cd backend
-	@go build -o bin/server ./cmd/bingo-local
+	@go build -v -o bin/server ./cmd/bingo-local
+
+.PHONY: up
+up: build
+	@./backend/bin/server

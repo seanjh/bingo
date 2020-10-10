@@ -4,9 +4,11 @@ version: "3.8"
 services:
   db:
     command: >-
-      -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar
-      -sharedDb -delayTransientStatuses
+      -jar DynamoDBLocal.jar
+      -Djava.library.path=./DynamoDBLocal_lib
+      -delayTransientStatuses
       -dbPath /var/dynamodb
+      -sharedDb
     image: amazon/dynamodb-local:latest
     ports:
       - "8000:8000"
